@@ -24,7 +24,6 @@ If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r
 ** Dominating power: Let S be the set of all s such that x >= s implies s(x) = 0. The Dominating Power dom(p) of a polynomial p is defined to be the minimum such s.
 *** S is nonempty because P[x] has finite support
 *** S contains a minimum element by well-ordering of N
-
 ** Definition of Polynomial Evaluation: The function E : P[x] -> N -> N is given by:
 *** Let p be a polynomial, and d be the dominating power of p. Then E(x) = sum(s(i) * x^i, i, 0, d)
 ** Definition: A polynomial of scale r is a polynomial p such that for all i, p(i) < r.
@@ -38,7 +37,6 @@ If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r
 ** Polynomial Order-Isomorphism Theorem: Polynomial order preserves order of natural numbers on evaluation for sufficiently high scale. That is,
 Let p, q be polynomials of scale r. If p < q, then for all n, n < r implies E(p, n) < E(q, n).
 *** TODO Proof:
-
 ** 1. Prove: Every natural number n can be represented by a polynomial B(n, b) with scale b with b > 1. That is,
 for all n, there exists a polynomial B(n, b) of scale b such that E(B(n, b), b) = n
 *** Proof:
@@ -60,32 +58,42 @@ for all n, there exists a polynomial B(n, b) of scale b such that E(B(n, b), b) 
 ***** quotient < b. Proof: If quotient >= b, then q is not the highest integer such that b^q <= n.
 *** TODO Uniqueness of the polynomial. Proof: Use the Polynomial order preservation theorem    
 ** 2. Define the representation of a natural number n with a scale r.
-*** The representation repr(r) is either empty or a sequence of terms t(i).
+*** The representation repr(r) is either empty or a sequence of terms t(i) with finitely many non-zero.
 *** A term is an integer less than r(the coefficient) and a representation(the exponent))
+*** The zero term is (0, empty)
+*** The dominating power dom(repr) of a representation repr is the first zero term such that all higher terms are zero.
 *** The function coef: term -> integer extracts the coefficient of a term)
 *** The function expon: term -> representation extracts the exponent of a term)
+*** Lemma: If n < r^r, then there is exactly one representation with scale r that evaluates to n. Proof:
+**** Claim: B(n, r) has coefficients and exponents that are all less than r
+**** Claim: B(n, r) = b can be made into a representation repr(b) as repr(b)(i) = (coef: b(i), exp: i)
+*** Theorem: Every n can be expanded into a unique representation with scale r. Proof:
+**** TODO Existence:
+***** Write p = B(n, r).
+***** Convert each p(i) into a term t(i) = (coef: b(i), exp: t(B(i, r))).
+***** This procedure terminates for each p(i) because it reduces the maximum coefficient in the set as if applying a logarithm each time.
+**** TODO Uniqueness:
+*** Definition: repr(n, r) is the unique representation of n in scale r.
+** TODO 3. repr(n, r) satisfies the recurrence repr(n, r) = c*r^repr(q, r) + repr(n - c*r^q).
+*** Not sure if this recurrence makes sense. We could define + and - on the sequences piecewise, but what does it mean to take a power to a sequence?
+*** OTOH, if this is worked around this could be a great way to simplify the theorem that every n can be expanded into a representation of scale r.
+** 4. Define a 'largest integer occurring in the representation' function
 *** The set coef : repr -> P(integer) of coefficients in a representation repr is defined as:
 coef(empty) = The empty set if repr is empty
 coef(t) = Union(coef(expon(t(i))) union {coef(t(i))}, i)
-*** Lemma: If n < r^r, then there is exactly one representation with scale r that evaluates to n. Proof:
-**** Claim: B(n, r) has coefficients and exponents that are all less than r
-**** Claim: B(n, r) = b can be made into a representation repr(b) as repr(b)(i) = (coef(b(i)): b(i), exp(b(i)): i)
-*** Theorem: Every n can be expanded into a unique representation with scale r. Proof:
-**** TODO Existence:
-**** TODO Uniqueness:
-*** Definition: repr(n, r) is the unique representation of n in scale r.
-
-** 3. Definition of R(s, n) *
-
-** 4. Define a 'largest integer occurring in the representation' function
-
+*** max_coef : repr -> integer ; s -> max(coef(t(i)), i in s)
 ** 5. Definition of T(b, a, n)
 *** Let q be the exponent of the greatest power of a contained in n, and let p*a^q be the greatest multiple of a^q contained in n, so that p and q are primitive recursive functions of a and n, a >= 2, n >= 1. For b >= a >= 2, we define
 T(b, a, 0) = 0
 T(b, a, n) = p
-
-
 ** TODO 6. Define the 'scale transform' function
+*** The evaluation function Et : term -> integer -> integer is defined to be:
+Et(empty, n) = 0
+Et(repr, n) = Er(repr, n)
+*** The evaluation function Er : repr -> integer -> integer is defined to be:
+Er(repr) = sum(Et(repr(i)), i, 0, dom(repr))
+*** The scale transform function T : integer -> integer -> integer -> integer is defined to be:
+T(b, a, n) = Er(repr(n, a), b)
 ** TODO 7. Prove the 'thus a decreasing sequence of ordinals takes the form' statement
 ** TODO 8. Prove: T(omega, m, n) = 0 iff n = 0
 ** TODO 9. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals
@@ -93,11 +101,8 @@ T(b, a, n) = p
 Given any non-decreasing function p(r) with p(0) >= 2, an initial n(0), and the function n(r) defined by the primitive recursion
 n(r+1) = T(p(r), p(r+1), n(r)) - 1
 then there is a value of r for which n(r) = 0
-
 ** TODO 11. Proposition F:
 If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
-
-
-** TODO 11. Proposition F: If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
+** TODO 12. Proposition F: If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
 *** Proof: If m(r) > 0 and r <= s and m(s+1) = 0, then taking n(0) = m(0) - 1, if n(k) = m(k) - 1 for some k, we find
 n(k+1) = T(p(k), p(k+1), n(k)) - 1 = T(p(k), p(k+1), m(k) - 1) = m(k+1) - 1
