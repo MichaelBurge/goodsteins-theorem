@@ -8,17 +8,16 @@ This proof is outlined in more detail in R. L. Goodstein's "Recursive Analysis" 
 ** 5. Define T(b, a, n)
 ** 6. Define the 'scale transform' function
 ** 7. Prove the 'thus a decreasing sequence of ordinals takes the form' statement
-** 8. Prove: T(omega, m, n) = 0 iff n = 0
-** 9. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals
-** 10. Proposition F*:
+** 8. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals
+** 9. Proposition F*:
 Given any non-decreasing function p(r) with p(0) >= 2, an initial n(0), and the function n(r) defined by the primitive recursion
 n(r+1) = T(p(r), p(r+1), n(r)) - 1
 then there is a value of r for which n(r) = 0
-
-** 11. Proposition F:
+** 10. Proposition F:
 If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
+** 11. Proposition F implies Proposition F*
 
-* Proof Detailed Outline
+* Polynomials
 ** Definition of Polynomial: A polynomial p over the variable x is a sequence s: N -> N with finite support. The i'th coefficient is defined to be s(i).
 ** Zero polynomial: The Zero Polynomial 0 is the sequence 'for all n, 0(n) = 0'.
 ** Dominating power: Let S be the set of all s such that x >= s implies s(x) = 0. The Dominating Power dom(p) of a polynomial p is defined to be the minimum such s.
@@ -57,6 +56,34 @@ for all n, there exists a polynomial B(n, b) of scale b such that E(B(n, b), b) 
 ***** Remainder can be written as a polynomial with degree q-1, so use the induction case.
 ***** quotient < b. Proof: If quotient >= b, then q is not the highest integer such that b^q <= n.
 *** TODO Uniqueness of the polynomial. Proof: Use the Polynomial order preservation theorem    
+
+** Theorem: Polynomials are well-ordered.
+*** TODO Prove this.
+
+* Ordinal numbers
+Reference: http://events.cs.bham.ac.uk/mgs2008/notes/proofTheory.pdf
+Reference: http://martijn.vermaat.name/master-project/coqdoc/Ordinal.html
+** Definition: An ordinal is either:
+0 : ordinal
+S(ord) : ordinal -> ordinal
+limit_ordinal(n -> ord) : (integer -> ordinal) -> ordinal
+
+** Polynomials can simulate ordinals up to omega^omega
+Simulate : ordinal -> polynomial is given by
+*** Zero:
+**** Simulate(0) = p, where for all i, p(i) = 0
+*** Successor:
+**** Let o be an ordinal we've simulated.
+**** Let po = Simulate(o).
+**** Then s(o) = po(0)+1, s(i) = po(i).
+**** Simulate(S(o)) = s
+*** Limit:
+**** o(i) be a sequence of simulated ordinals of whose polynomials whose dominating powers are less than q.
+**** Let O be the limit ordinal of the o(i).
+**** Then o < omega^q for some minimal q.
+**** 
+*** 
+* Proof Detailed Outline
 ** 2. Define the representation of a natural number n with a scale r.
 *** The representation repr(r) is either empty or a sequence of terms t(i) with finitely many non-zero.
 *** A term is an integer less than r(the coefficient) and a representation(the exponent))
@@ -95,14 +122,18 @@ Er(repr) = sum(Et(repr(i)), i, 0, dom(repr))
 *** The scale transform function T : integer -> integer -> integer -> integer is defined to be:
 T(b, a, n) = Er(repr(n, a), b)
 ** TODO 7. Prove the 'thus a decreasing sequence of ordinals takes the form' statement
-** TODO 8. Prove: T(omega, m, n) = 0 iff n = 0
-** TODO 9. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals
-** TODO 10. Proposition F*:
+*** TODO Claim: T(omega, a, n) <= T(omega, A, N) iff there exists an x such that for all n, y >= x implies T(y, a, n) <= T(y, A, N)
+*** TODO Claim: if m >= M, T(omega, m, n) < T(omega, M, N) iff T(m, M, N) > T(m, m, n) = n 
+*** TODO Claim: Let a, b be ordinals. Then T(omega, m1, n1) > T(omega, m2, n2) if m2 >= m1 and n2 < T(m2, m1, n1)
+** TODO 8. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals
+*** TODO Prove: T(omega, m, n) = 0 iff n = 0
+** TODO 9. Proposition F*:
 Given any non-decreasing function p(r) with p(0) >= 2, an initial n(0), and the function n(r) defined by the primitive recursion
 n(r+1) = T(p(r), p(r+1), n(r)) - 1
 then there is a value of r for which n(r) = 0
-** TODO 11. Proposition F:
-If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
-** TODO 12. Proposition F: If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
+** TODO 10. Proposition F: Let p(r) be a non-decreasing function. If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0.
 *** Proof: If m(r) > 0 and r <= s and m(s+1) = 0, then taking n(0) = m(0) - 1, if n(k) = m(k) - 1 for some k, we find
 n(k+1) = T(p(k), p(k+1), n(k)) - 1 = T(p(k), p(k+1), m(k) - 1) = m(k+1) - 1
+** TODO 11. Proposition F implies Proposition F*
+*** For if m(r) > 0, r <= s, and m(s+1) = 0, then taking n(0) = m(0) - 1, if n(k) = m(k) - 1 for some k, we find
+n(k+1) = T(p(k), p(k+1), n(k) - 1 = T(p(k), p(k+1), m(k) - 1) - 1 = m(k+1) - 1
