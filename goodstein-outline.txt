@@ -1,0 +1,105 @@
+(*****************)
+(* Proof Outline *)
+(*****************)
+(* This proof is outlined in more detail in R. L. Goodstein's "Recursive Analysis" starting on page 107. *)
+
+(* 1. Prove: Every natural number can be factored into a polynomial over a base *)
+(* 2. Define the representation of a natural number with a scale *)
+(* 3. Define the R(s, n) transformation *)
+(* 4. Define a 'largest integer occurring in the representation' function *)
+(* 5. Define T(b, a, n) *)
+(* 6. Define the 'scale transform' function *)
+(* 7. Prove the 'thus a decreasing sequence of ordinals takes the form' statement *)
+(* 8. Prove: T(omega, m, n) = 0 iff n = 0 *)
+(* 9. Prove the statement about the form of the argument that gives the longest decreasing sequence of ordinals *)
+(* 10. Proposition F*: Given any non-decreasing function p(r) with p(0) >= 2, an initial n(0), and the function n(r) defined by the primitive recursion
+n(r+1) = T(p(r), p(r+1), n(r)) - 1
+then there is a value of r for which n(r) = 0
+
+(* 11. Proposition F: If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0. *)
+
+(************************)
+(* Proof Detailed Outline *)
+(************************)
+
+(* Definition of Polynomial: A polynomial p over the variable x is a sequence s: N -> N with finite support. The i'th coefficient is defined to be s(i). *)
+(* Zero polynomial: The Zero Polynomial 0 is the sequence 'for all n, 0(n) = 0'.
+(* Dominating power: Let S be the set of all s such that x >= s implies s(x) = 0. The Dominating Power dom(p) of a polynomial p is defined to be the minimum such s.
+  (S is nonempty because P[x] has finite support)
+  (S contains a minimum element by well-ordering of N)
+*)
+(* Definition of Polynomial Evaluation: The function E : P[x] -> N -> N is given by:
+  ( Let p be a polynomial, and d be the dominating power of p. Then E(x) = sum(s(i) * x^i, i, 0, d) )
+*)
+(* Definition: A polynomial of scale r is a polynomial p such that for all i, p(i) < r. *)
+(* Polynomial Domination Lemma: Let p(x), q(x) be polynomials of scale r. Then dom(p) > dom(q) implies E(p, r) > E(q, r). *)
+(* Definition: Let p, q be polynomials. Then p < q if there exists an i such that p(i) < q(i) and j > i implies p(j) = q(i).
+  i is unique and is called the difference order of p and q
+    (1. Let S be the upper set of matching coefficients. That is, s in S iff x >= s implies p(x) = q(x). )
+    (2. S is nonempty. Proof: Let d(p) and d(q) be the dominating powers of p and q. Then x >= max(d(p), d(q)) implies p(x) = 0 and q(x) = 0, so p(x) = q(x). )
+    (3. Let s be the minimum element of S. s exists by well-ordering of the natural numbers )
+    (4. The precedessor of s exists. Proof: Otherwise, p < q wouldn't be true because there would exist no such i with p(i) < q(i))
+    (5. i is the predecessor of s.)
+*)
+(* Theorem: Polynomial order preserves order of natural numbers on evaluation for sufficiently high scale. That is,
+  (Let p, q be polynomials of scale r. If p < q, then for all n, n < r implies E(p, n) < E(q, n).)
+  (Proof:
+    (4. )
+(* 1. Prove: Every natural number n can be represented by a polynomial B(n, b) with scale b with b > 1. That is,
+  ( for all n, there exists a polynomial B(n, b) of scale b such that E(B(n, b), b) = n )
+  (Proof:
+    (A. Existence of the polynomial: Proof by Induction on the statements P(i) = for all q, for all n, n < b^q implies n can be written as a polynomial
+       (1. Base case: 0 is represented by the polynomial (0, 0, 0, 0, ...). Proof: 0 < b since b > 1.
+       (2. Implication case: Assume such a polynomial exist
+       (1. Let q be the highest integer such that b^q <= n. Proof that q exists:
+         (A. If b > 1, then a >= b implies b^a >= b^b. Proof: Induction. )
+         (B. If b > 1, then for all n there exists a q such that b^q > n ),
+         (C. Let S be the set of all natural numbers such that b^q > n.)
+         (D. S is upward-closed: If s in S and t >= s, then t in S. Proof: b^
+         (E. By A, S is non-empty. By well-ordering, there exists a least element s of S. )
+         (F. The precedessor of s is then q: Proof that s satisfies q's properties:
+           ( 1: It satisfies b^q <= n. Proof: If b^q > 0, then s wouldn't be the least s of S. )
+           ( 2: It is the highest such number; that is, if x satisfies b^x <= n, then x <= q. )
+         )
+       )
+       (2. Write n = b^q * quotient + remainder with remainder < b^q. Proof: Euclidean division )
+       (3. Remainder can be written as a polynomial with degree q-1, so use the induction case. )
+       (4. quotient < b. Proof: If quotient >= b, then q is not the highest integer such that b^q <= n. )
+    (B. Uniqueness of the polynomial. Proof: Polynomial order preservation theorem)
+*)
+    
+(* 2. Define the representation of a natural number n with a scale r.  *)
+(* The representation repr(r) is either empty or a sequence of terms t(i).
+  (A term is an integer less than r(the coefficient) and a representation(the exponent))
+  (The function coef: term -> integer extracts the coefficient of a term)
+  (The function expon: term -> representation extracts the exponent of a term)
+  (The set coef : repr -> P(integer) of coefficients in a representation repr is defined as:
+    (coef(empty) = The empty set if repr is empty)
+    (coef(t) = Union(coef(expon(t(i))) union {coef(t(i))}, i))
+  )
+  (Lemma: If n < r^r, then there is exactly one representation with scale r that evaluates to n. Proof:
+    (Claim: B(n, r) has coefficients and exponents that are all less than r)
+    (Claim: B(n, r) = b can be made into a representation repr(b) as repr(b)(i) = (coef(b(i)): b(i), exp(b(i)): i))
+  )
+  (Theorem: Every n can be expanded into a unique representation with scale r. Proof:
+    (Existence:)
+    (Uniqueness:)
+  )
+  (Definition: repr(n, r) is the unique representation of n in scale r. )
+*)
+
+(* 3. Definition of R(s, n) *)
+
+(* 4. Define a 'largest integer occurring in the representation' function *)
+
+(* 5. Definition of T(b, a, n)
+Let q be the exponent of the greatest power of a contained in n, and let p*a^q be the greatest multiple of a^q contained in n, so that p and q are primitive recursive functions of a and n, a >= 2, n >= 1. For b >= a >= 2, we define
+T(b, a, 0) = 0
+T(b, a, n) = p
+*)
+
+
+(* 11. Proposition F: If m(r+1) = T(p(r), p(r+1), m(r) - 1), then there exists a value r such that m(r) = 0. *)
+(* Proof: If m(r) > 0 and r <= s and m(s+1) = 0, then taking n(0) = m(0) - 1, if n(k) = m(k) - 1 for some k, we find
+n(k+1) = T(p(k), p(k+1), n(k)) - 1 = T(p(k), p(k+1), m(k) - 1) = m(k+1) - 1
+*)
