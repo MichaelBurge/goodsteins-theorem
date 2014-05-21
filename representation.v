@@ -2,6 +2,7 @@ Require Import Coq.Init.Peano.
 Require Import Coq.Numbers.Natural.Peano.NPeano.
 Require Import Arith.
 Require Import Bool.
+Require Import Classical.
 
 Module Type RepresentationSig.
 Parameter A : Type.
@@ -31,309 +32,365 @@ Fixpoint poly_succ (poly:Polynomial) (scale:nat) : Polynomial :=
   match poly with
   | poly_nil => poly_cons 1 poly_nil
   | poly_cons n tail =>
-    if n + 1 <? scale
-    then poly_cons (n+1) tail
-    else poly_cons 0 (poly_succ tail scale)
-  end.
-
- Fixpoint poly_repr (n:nat) (scale:nat) : Polynomial :=
-   match n with 
-   | 0 => poly_nil
-   | S x => poly_succ (poly_repr x scale) scale
+     if n + 1 <? scale
+     then poly_cons (n+1) tail
+     else poly_cons 0 (poly_succ tail scale)
    end.
 
-Fixpoint poly_eval (poly:Polynomial) (scale:nat) : nat :=
-  match poly with
-  | poly_nil => 0
-  | poly_cons n tail => n + scale * (poly_eval tail scale)
-  end.
-Fixpoint poly_add (initial:Polynomial) (k:nat) (scale:nat) : Polynomial :=
-  match k with 
-  | 0 => initial
-  | S x => poly_add (poly_succ initial scale) x scale
-  end.
+  Fixpoint poly_repr (n:nat) (scale:nat) : Polynomial :=
+    match n with 
+    | 0 => poly_nil
+    | S x => poly_succ (poly_repr x scale) scale
+    end.
 
-Definition poly_lift (n:nat) (scale:nat) : Polynomial :=
-  poly_add poly_nil n scale.
+ Fixpoint poly_eval (poly:Polynomial) (scale:nat) : nat :=
+   match poly with
+   | poly_nil => 0
+   | poly_cons n tail => n + scale * (poly_eval tail scale)
+   end.
+ Fixpoint poly_add (initial:Polynomial) (k:nat) (scale:nat) : Polynomial :=
+   match k with 
+   | 0 => initial
+   | S x => poly_add (poly_succ initial scale) x scale
+   end.
 
-Fixpoint poly_tail (poly:Polynomial) : Polynomial :=
-  match poly with
-  | poly_nil => poly_nil
-  | poly_cons n tail => tail
-  end.
+ Definition poly_lift (n:nat) (scale:nat) : Polynomial :=
+   poly_add poly_nil n scale.
 
-Fixpoint poly_change (poly:Polynomial) (index:nat) (coefficient:nat) (scale:nat) : Polynomial :=
-  match index with
-  | 0 => poly_cons coefficient (poly_tail poly)
-  | S x => poly_change poly x coefficient scale
-  end.
+ Fixpoint poly_tail (poly:Polynomial) : Polynomial :=
+   match poly with
+   | poly_nil => poly_nil
+   | poly_cons n tail => tail
+   end.
 
-Fixpoint poly_eq (poly1 poly2 : Polynomial) : Prop :=
-  match poly1 with
-  | poly_nil => poly2 = poly_nil
-  | poly_cons n1 tail1 =>
-    match poly2 with
-    | poly_nil => False
-    | poly_cons n2 tail2 =>
-      n1 = n2 /\ poly_eq tail1 tail2
-    end
-  end.
+ Fixpoint poly_change (poly:Polynomial) (index:nat) (coefficient:nat) (scale:nat) : Polynomial :=
+   match index with
+   | 0 => poly_cons coefficient (poly_tail poly)
+   | S x => poly_change poly x coefficient scale
+   end.
 
-Fixpoint poly_lt (poly1 poly2 : Polynomial) : Prop :=
-  match poly1 with
-  | poly_nil => poly2 <> poly_nil
-  | poly_cons n1 tail1 =>
-    match poly2 with
-    | poly_nil => False
-    | poly_cons n2 tail2 =>
-      (n1 < n2 /\ poly_eq tail1 tail2) \/ poly_lt tail1 tail2
-    end
-  end.
+ Fixpoint poly_eq (poly1 poly2 : Polynomial) : Prop :=
+   match poly1 with
+   | poly_nil => poly2 = poly_nil
+   | poly_cons n1 tail1 =>
+     match poly2 with
+     | poly_nil => False
+     | poly_cons n2 tail2 =>
+       n1 = n2 /\ poly_eq tail1 tail2
+     end
+   end.
 
-Fixpoint poly_le (poly1 poly2 : Polynomial) : Prop :=
-  match poly1 with
-  | poly_nil => True
-  | poly_cons n1 tail1 =>
-    match poly2 with
-    | poly_nil => False
-    | poly_cons n2 tail2 =>
-      (n1 <= n2 /\ poly_le tail1 tail2) \/ poly_lt tail1 tail2
-    end
-  end.
+ Fixpoint poly_lt (poly1 poly2 : Polynomial) : Prop :=
+   match poly1 with
+   | poly_nil => poly2 <> poly_nil
+   | poly_cons n1 tail1 =>
+     match poly2 with
+     | poly_nil => False
+     | poly_cons n2 tail2 =>
+       (n1 < n2 /\ poly_eq tail1 tail2) \/ poly_lt tail1 tail2
+     end
+   end.
+
+ Fixpoint poly_le (poly1 poly2 : Polynomial) : Prop :=
+   match poly1 with
+   | poly_nil => True
+   | poly_cons n1 tail1 =>
+     match poly2 with
+     | poly_nil => False
+     | poly_cons n2 tail2 =>
+       (n1 <= n2 /\ poly_le tail1 tail2) \/ poly_lt tail1 tail2
+     end
+   end.
 
 
-Functional Scheme poly_succ_ind := Induction for poly_succ Sort Prop.
-Functional Scheme poly_repr_ind := Induction for poly_repr Sort Prop.
-Functional Scheme poly_eval_ind := Induction for poly_eval Sort Prop.
-Functional Scheme poly_add_ind := Induction for poly_add Sort Prop.
-Functional Scheme poly_tail_ind := Induction for poly_tail Sort Prop.
-Functional Scheme poly_change_ind := Induction for poly_change Sort Prop.
-Functional Scheme poly_le_ind := Induction for poly_le Sort Prop.
+ Functional Scheme poly_succ_ind := Induction for poly_succ Sort Prop.
+ Functional Scheme poly_repr_ind := Induction for poly_repr Sort Prop.
+ Functional Scheme poly_eval_ind := Induction for poly_eval Sort Prop.
+ Functional Scheme poly_add_ind := Induction for poly_add Sort Prop.
+ Functional Scheme poly_tail_ind := Induction for poly_tail Sort Prop.
+ Functional Scheme poly_change_ind := Induction for poly_change Sort Prop.
+ Functional Scheme poly_le_ind := Induction for poly_le Sort Prop.
 
-Fixpoint tail (poly:Polynomial) : Polynomial :=
-  match poly with
-  | poly_nil => poly_nil
-  | poly_cons n tail => tail
-  end.  
+ Fixpoint tail (poly:Polynomial) : Polynomial :=
+   match poly with
+   | poly_nil => poly_nil
+   | poly_cons n tail => tail
+   end.  
 
-Theorem poly_eq_self :
-  forall (poly1 : Polynomial),
-    poly_eq poly1 poly1.
-Proof.
-  intros.
-  induction poly1.
-  simpl. auto.
-  simpl.
-  auto.
-  Qed.
+ Theorem poly_eq_self :
+   forall (poly1 : Polynomial),
+     poly_eq poly1 poly1.
+ Proof.
+   intros.
+   induction poly1.
+   simpl. auto.
+   simpl.
+   auto.
+   Qed.
 
-Theorem poly_eq_if_equal :
-  forall (poly1 poly2 : Polynomial),
-    poly1 = poly2 -> poly_eq poly1 poly2.
-Proof.
-  intros.
-  rewrite H.
-  induction poly2.
-  simpl. auto.
-  simpl.
-  split.
-  auto.
-  apply poly_eq_self.
-  Qed.
+ Theorem poly_eq_if_equal :
+   forall (poly1 poly2 : Polynomial),
+     poly1 = poly2 -> poly_eq poly1 poly2.
+ Proof.
+   intros.
+   rewrite H.
+   induction poly2.
+   simpl. auto.
+   simpl.
+   split.
+   auto.
+   apply poly_eq_self.
+   Qed.
 
-Theorem tail_composition :
-  forall (poly1 poly2 : Polynomial),
-    forall (n:nat),
-      poly_eq poly1 (poly_cons n poly2) -> poly_eq (tail poly1) poly2.
-Proof.
-  intros.
-  induction poly1.
-  simpl in H.
-  discriminate H.
-  simpl in H.
-  simpl.
-  decompose [and] H.
-  apply H1.
-  Qed.
-  
-Theorem equal_if_poly_eq :
-  forall (poly1 poly2 : Polynomial),
-    poly_eq poly1 poly2 -> poly1 = poly2.
-Proof.
-  intro.
-  induction poly1.
-  intros.
-  simpl in H.
-  auto.
+ Theorem tail_composition :
+   forall (poly1 poly2 : Polynomial),
+     forall (n:nat),
+       poly_eq poly1 (poly_cons n poly2) -> poly_eq (tail poly1) poly2.
+ Proof.
+   intros.
+   induction poly1.
+   simpl in H.
+   discriminate H.
+   simpl in H.
+   simpl.
+   decompose [and] H.
+   apply H1.
+   Qed.
 
-  intro.
-  induction poly2.
+ Theorem equal_if_poly_eq :
+   forall (poly1 poly2 : Polynomial),
+     poly_eq poly1 poly2 -> poly1 = poly2.
+ Proof.
+   intro.
+   induction poly1.
+   intros.
+   simpl in H.
+   auto.
 
-  intros.
-  simpl in H. contradiction.
+   intro.
+   induction poly2.
 
-  intros.
+   intros.
+   simpl in H. contradiction.
 
-  simpl in H.    
-  decompose [and] H.
+   intros.
 
-  apply IHpoly1 in H1.
-  rewrite H0.
-  rewrite H1.
-  tauto.
-  Qed.
+   simpl in H.    
+   decompose [and] H.
 
-Theorem poly_eq_implies_poly_le :
-  forall (poly1 poly2 : Polynomial),
-    poly_eq poly1 poly2 -> poly_le poly1 poly2.
-Proof.
-  intro.
-  induction poly1.
-  intros.
-  simpl. auto.
-  intros.
-  induction poly2.
-  unfold poly_eq in H.
-  contradiction.  
-  simpl in H.
-  decompose [and] H.
-  simpl.
-  left.
-  split.
-  rewrite H0. apply le_n.
-  apply IHpoly1 in H1.
-  auto.
-  Qed.
+   apply IHpoly1 in H1.
+   rewrite H0.
+   rewrite H1.
+   tauto.
+   Qed.
 
-Theorem poly_lt_implies_poly_le :
-  forall (poly1 poly2 : Polynomial),
-    poly_lt poly1 poly2 -> poly_le poly1 poly2.
-Proof.
-  intro.
-  induction poly1.
-  simpl. auto.
-  intros.
-  induction poly2.
+ Theorem poly_eq_implies_poly_le :
+   forall (poly1 poly2 : Polynomial),
+     poly_eq poly1 poly2 -> poly_le poly1 poly2.
+ Proof.
+   intro.
+   induction poly1.
+   intros.
+   simpl. auto.
+   intros.
+   induction poly2.
+   unfold poly_eq in H.
+   contradiction.  
+   simpl in H.
+   decompose [and] H.
+   simpl.
+   left.
+   split.
+   rewrite H0. apply le_n.
+   apply IHpoly1 in H1.
+   auto.
+   Qed.
 
-  unfold poly_lt in H.
-  contradiction.
-  simpl in H.
-  destruct H.
-  decompose [and] H.
-  
-  simpl.
-  left.
-  split.
-  apply lt_le_weak.
-  auto.
-  apply poly_eq_implies_poly_le. auto.
-  simpl.
-  right.
-  auto.
-  Qed.
-  
-Theorem nat_le_Sn :
+ Theorem poly_lt_implies_poly_le :
+   forall (poly1 poly2 : Polynomial),
+     poly_lt poly1 poly2 -> poly_le poly1 poly2.
+ Proof.
+   intro.
+   induction poly1.
+   simpl. auto.
+   intros.
+   induction poly2.
+
+   unfold poly_lt in H.
+   contradiction.
+   simpl in H.
+   destruct H.
+   decompose [and] H.
+
+   simpl.
+   left.
+   split.
+   apply lt_le_weak.
+   auto.
+   apply poly_eq_implies_poly_le. auto.
+   simpl.
+   right.
+   auto.
+   Qed.
+
+Theorem Sn_eq_plus_one :
   forall (n:nat),
-    n < n+1.
+    S n = n+1.
 Proof.
+  intros.
   induction n.
-  auto.
+  simpl. auto.
   simpl.
-  apply lt_n_S.
-  apply IHn.
+  rewrite IHn.
+  auto.
   Qed.
 
-Theorem poly_le_iff_poly_lt_or_poly_eq :
-  forall (poly1 poly2 : Polynomial),
-    poly_le poly1 poly2 <-> poly_lt poly1 poly2 \/ poly_eq poly1 poly2.
+ Theorem nat_lt_n_plus_one :
+   forall (n:nat),
+     n < n+1.
+ Proof.
+   induction n.
+   auto.
+   simpl.
+   apply lt_n_S.
+   apply IHn.
+   Qed.
+
+ Theorem n_ne_n_plus_1 :
+   forall (n:nat),
+     n <> n+1.
+ Proof.
+   intros.
+   induction n.
+   simpl. auto.
+   simpl.
+   rewrite <- Sn_eq_plus_one.
+   auto.
+   Qed.
+
+ Theorem poly_le_implies_poly_lt_or_poly_eq :
+   forall (poly1 poly2 : Polynomial),
+     poly_le poly1 poly2 -> poly_lt poly1 poly2 \/ poly_eq poly1 poly2.
+ Proof.
+   intro.
+   induction poly1.
+   intros.
+
+   induction poly2.  
+   right. apply poly_eq_self.
+   left.
+   simpl.
+   discriminate.
+
+   intros.
+   induction poly2.
+   simpl in H. contradiction.
+
+   simpl in H.
+   simpl.
+   destruct H.
+
+   decompose [and] H.
+   apply IHpoly1 in H1.
+   destruct H1.  
+   left.
+   right.
+   auto.
+   apply equal_if_poly_eq in H1.
+   rewrite H1.
+   apply le_lt_or_eq in H0.
+   destruct H0.
+   left.
+   left.
+   split.
+   auto.
+   apply poly_eq_self.
+
+   right.
+   split.
+   apply H0.
+   apply poly_eq_if_equal.
+   auto.
+
+   left. right.
+   apply H.
+   Qed.
+
+ Theorem poly_le_iff_poly_lt_or_poly_eq :
+   forall (poly1 poly2 : Polynomial),
+     poly_le poly1 poly2 <-> poly_lt poly1 poly2 \/ poly_eq poly1 poly2.
+ Proof.
+   intros.
+   split.
+   apply poly_le_implies_poly_lt_or_poly_eq.
+   intro.
+   destruct H.
+   apply poly_lt_implies_poly_le.
+   auto.
+   apply poly_eq_implies_poly_le.
+   auto.
+   Qed.  
+
+Theorem poly_succ_ne :
+  forall (poly:Polynomial) (scale:nat),
+    poly_succ poly scale <> poly.
 Proof.
+  intro.
+  induction poly.
   intros.
-  split.
-  (* ==> *)
-  induction poly1.
-  induction poly2.
-  simpl. auto.
-
   simpl.
-  assert (poly_cons n poly2 <> poly_nil).    
-  congruence.
-
+  discriminate.
   intros.
-  left.
-  apply H.
+  simpl.
+  remember (n+1 <? scale) as b.
+  induction b.
+  injection.
+  intro.
+  apply n_ne_n_plus_1 with (n := n).
+  auto.
 
+  injection.
   intros.
-  induction poly2.
-  unfold poly_le in H.  
+  apply IHpoly in H0.
+  auto.
+  Qed.
+ 
+Theorem poly_succ_lt :
+  forall (poly:Polynomial) (scale:nat),
+    poly_lt poly (poly_succ poly scale).
+Proof.
+  intro.
+  induction poly.
+  discriminate.
+
+  induction scale.
+  simpl.
+  right.
+  apply IHpoly.
+  
+  assert (poly_lt poly (poly_succ poly (S scale))).
+  apply IHpoly.
+  simpl.
+  remember (n+1 <? S scale).
+  induction b.
+  simpl in IHscale.
+  remember (n+1 <? scale).
+  induction b.
+  apply IHscale.
+  destruct IHscale.
+  decompose [and] H0.
+  apply lt_n_0 in H1.
   contradiction.
 
-  simpl.
-  unfold poly_le in H.
-  destruct H.
-  decompose [and] H.
-  assert (n < n0 \/ n = n0).
-  apply le_lt_or_eq.  
-  apply H0.
-  decompose [or] H2.
   left.
-  left.
-  auto.
-  right.
-  auto.
-  left.
+  split.
+  apply nat_lt_n_plus_one.  
+  apply poly_eq_self.
+
   right.
   apply H.
+  Qed.
 
-  (* <== *)
-  intros.
-  induction poly1.
-  simpl. auto.
-  induction poly2.
-  
-
-Theorem poly_succ_le :
-  forall (poly:Polynomial) (scale:nat),
-    poly_le poly (poly_succ poly scale).
-Proof.
-  intros.
-  functional induction poly_succ poly scale.
-
-  (* Base case for poly_nil *)
-  simpl.
-  auto.
-
-  (* Induction on n in poly_succ *)
-  simpl.
-  assert (n + 0 < n + 1).
-  assert (0 < 1).
-  auto.
-  assert (n <= n+1).
-  apply le_plus_l.
-  apply plus_le_lt_compat with (n := n) (m := n) (p := 0) (q := 1).
-  auto.
-  auto.
-  assert (n < n + 1).
-  apply nat_le_Sn.  
-  auto.
-
-  (* Induction on poly_succ structurally *)
-  simpl.
-  
-  auto.
-  
-  apply or_intror.
-  split.
-  tauto.
-  apply IHp.
-
-
-  apply or_intror.
-  apply 
-  in auto.
-  unfold poly_le.
-  
-  unfold plus.
-  apply lt_n_Sn with (n := n).
 Theorem poly_prop_succ :
   forall n scale : nat,
     poly_eval (poly_lift n scale) scale = n.
