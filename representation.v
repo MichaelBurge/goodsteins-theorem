@@ -1,5 +1,6 @@
 Require Import Coq.Init.Peano.
 Require Import Coq.Numbers.Natural.Peano.NPeano.
+Require Import Coq.Structures.Orders.
 Require Import Arith.
 Require Import Bool.
 Require Import Classical.
@@ -391,10 +392,83 @@ Proof.
   apply H.
   Qed.
 
+Theorem false_ltb_implies_ge :
+  forall a b : nat,
+    false = (a <? b) -> a >= b.
+Proof.
+  admit.
+  Qed.
+
+Theorem poly_succ_nat_succ :
+  forall scale : nat,
+    forall poly : Polynomial,
+      poly_is_scale poly scale ->
+        poly_eval (poly_succ poly scale) scale = S (poly_eval poly scale).
+Proof.
+  intros.
+  induction poly.
+  simpl.
+  auto.
+  simpl. 
+  remember (n+1 <? scale).
+  induction b.
+  simpl.
+  assert (n+1 = S n).
+  symmetry.
+  apply Sn_eq_plus_one.
+  rewrite H0.
+  auto.
+
+  simpl.
+  rewrite IHpoly.
+  rewrite mult_succ_r.
+  apply false_ltb_implies_ge in Heqb.
+  simpl in H.
+  decompose [and] H.
+  unfold lt in H0.
+  rewrite -> Sn_eq_plus_one in H0.
+  assert (scale = n+1).
+  apply le_antisym.
+  apply Heqb.
+  apply H0.
+  rewrite Sn_eq_plus_one.
+  remember (n + scale * poly_eval poly scale + 1).
+
+  rewrite plus_comm in Heqn0.
+  rewrite plus_permute in Heqn0.
+  rewrite plus_assoc in Heqn0.
+  rewrite plus_comm.  
+  rewrite <- H2 in Heqn0.
+  auto.
+
+  simpl in H.
+  decompose [and] H.  
+  apply H1.
+  Qed.
+
 Theorem poly_prop_succ :
   forall n scale : nat,
     poly_eval (poly_lift n scale) scale = n.
 Proof.
+  intro.
+  induction n.
+  intros.
+  simpl. auto.
+  intros.
+  unfold poly_lift.
+  remember (poly_add poly_nil (S n) scale).
+  induction p.
+  
+
+  induction p.
+  simpl in Heqp.
+  induction n.
+  simpl in Heqp.
+  discriminate.
+  simpl in Heqp.
+  remember (2 <? scale).
+  induction b.
+  simpl. unfold poly_add in Heqp.
   (* 1. Find the least index i with coef(i) + 1 < scale *)
   (* 2. Use scale^i = sum((scale - 1) * scale^j, j, 0, i) + 1 *)
   (* 3. *)
