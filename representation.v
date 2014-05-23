@@ -38,12 +38,6 @@ Fixpoint poly_succ (poly:Polynomial) (scale:nat) : Polynomial :=
      else poly_cons 0 (poly_succ tail scale)
    end.
 
-  Fixpoint poly_repr (n:nat) (scale:nat) : Polynomial :=
-    match n with 
-    | 0 => poly_nil
-    | S x => poly_succ (poly_repr x scale) scale
-    end.
-
  Fixpoint poly_eval (poly:Polynomial) (scale:nat) : nat :=
    match poly with
    | poly_nil => 0
@@ -105,7 +99,6 @@ Fixpoint poly_succ (poly:Polynomial) (scale:nat) : Polynomial :=
 
 
  Functional Scheme poly_succ_ind := Induction for poly_succ Sort Prop.
- Functional Scheme poly_repr_ind := Induction for poly_repr Sort Prop.
  Functional Scheme poly_eval_ind := Induction for poly_eval Sort Prop.
  Functional Scheme poly_add_ind := Induction for poly_add Sort Prop.
  Functional Scheme poly_tail_ind := Induction for poly_tail Sort Prop.
@@ -399,6 +392,13 @@ Proof.
   admit.
   Qed.
 
+(* Theorem poly_succ_eq_poly_plus_one : *)
+(*   forall scale : nat, *)
+(*     forall poly : Polynomial, *)
+(*       poly_succ poly scale = poly_add (poly_cons 1 poly_nil) scale. *)
+(*    poly_eval (poly_add (poly_cons 1 poly_nil) n scale) scale = *)
+(*    S (poly_eval (poly_add poly_nil n scale) scale) *)
+
 Theorem poly_succ_nat_succ :
   forall scale : nat,
     forall poly : Polynomial,
@@ -446,57 +446,113 @@ Proof.
   apply H1.
   Qed.
 
-Theorem poly_prop_succ :
-  forall n scale : nat,
-    poly_eval (poly_lift n scale) scale = n.
+Theorem poly_add_poly_succ :
+  forall (n scale : nat),
+    forall (poly:Polynomial),
+      poly_add poly (S n) scale = poly_add (poly_succ poly scale) n scale.
 Proof.
   intro.
   induction n.
   intros.
   simpl. auto.
   intros.
-  unfold poly_lift.
-  remember (poly_add poly_nil (S n) scale).
-  induction p.
-  
-
-  induction p.
-  simpl in Heqp.
-  induction n.
-  simpl in Heqp.
-  discriminate.
-  simpl in Heqp.
-  remember (2 <? scale).
-  induction b.
-  simpl. unfold poly_add in Heqp.
-  (* 1. Find the least index i with coef(i) + 1 < scale *)
-  (* 2. Use scale^i = sum((scale - 1) * scale^j, j, 0, i) + 1 *)
-  (* 3. *)
-  induction.
-  intros.
-  unfold poly_lift.  
-  functional induction poly_eval (poly scale.
-  
+  simpl.
+  auto.
+  Qed.
  
-Theorem poly_prop_repr_eval :
-  forall n scale : nat,
-  scale > 1 -> poly_eval (poly_repr n scale) scale = n.
+Theorem poly_succ_plus :
+  forall (n scale:nat),
+    forall (poly:Polynomial),
+      poly_succ (poly_add poly n scale) scale = poly_add (poly_succ poly scale) n scale.
+Proof.
+  intro. intro.
+  induction n.
+  intros.
+  simpl. auto.
+  simpl.
+  intro.
+  apply IHn with (poly := poly_succ poly scale).
+  Qed.    
+
+Theorem poly_succ_preserves_is_scale :
+  forall (scale:nat),
+    forall (poly:Polynomial),
+      scale > 1 -> poly_is_scale poly scale -> poly_is_scale (poly_succ poly scale) scale.
+Proof.
+  intro. intro.
+  induction poly.
+  intros.
+  simpl. split. auto. auto.
+
+  intros.
+  simpl.
+  remember (n+1 <? scale).
+  induction b.  
+  simpl.
+  split.
+  symmetry in Heqb.
+  apply ltb_lt.
+  assumption.
+  simpl in H0.
+  decompose [and] H0.
+  apply H2.
+
+  simpl.
+  split.
+  auto with arith.
+  apply false_ltb_implies_ge in Heqb.
+  apply IHpoly in H.
+  apply H.
+  simpl in H0.
+  decompose [and] H0.
+  apply H2.
+  Qed.
+  
+Theorem poly_add_is_scale :
+  forall (n scale:nat),
+    scale > 1 -> poly_is_scale (poly_add poly_nil n scale) scale.
 Proof.
   intros.
-  functional induction poly_repr n scale.
-  simpl.
+  induction n.  
+  simpl. auto.
+  simpl. fold (poly_succ poly_nil scale).
+  rewrite <- poly_succ_plus.
+  apply poly_succ_preserves_is_scale.
+  auto.  
   auto.
-  
+  Qed.
 
-  induction n.
-  intros.  
-  simpl.
-  auto.
+Theorem poly_nat_iso :
+  forall (n scale:nat),
+    scale > 1 -> poly_eval (poly_add poly_nil n scale) scale = n.
+Proof.    
   intros.
-  unfold poly_repr.
-  unfold poly_eval.
-  
-Eval compute in poly_eval (poly_repr 43 3) 3.
+  induction n.
+  simpl. auto.
+  simpl.
+  fold (poly_succ poly_nil scale).
+  rewrite <- poly_succ_plus.
+  rewrite poly_succ_nat_succ.
+  rewrite IHn.
+  auto.
+
+  apply poly_add_is_scale.
+  auto.
+  Qed.
+
+Theorem poly_prop_succ :
+  forall n scale : nat,
+    scale > 1 -> poly_eval (poly_lift n scale) scale = n.
+Proof.
+  intros.
+  induction n.
+  intros.
+  simpl. auto.
+  unfold poly_lift.
+  apply poly_nat_iso.
+  auto.
+  Qed.
+ 
 
  Inductive Skeleton : Type :=
    | Empty : Skeleton
